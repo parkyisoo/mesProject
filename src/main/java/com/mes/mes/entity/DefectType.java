@@ -1,11 +1,11 @@
 package com.mes.mes.entity;
 
 /**
- * Maps to MySQL {@code defects.defect_type} ENUM.
+ * MySQL {@code defects.defect_type}: {@code ENUM('EQUIPMENT','MATERIAL','OPERATOR','UNKNOWN')}.
  */
 public enum DefectType {
-    APPEARANCE,
-    DIMENSION,
+    EQUIPMENT,
     MATERIAL,
-    OTHER
+    OPERATOR,
+    UNKNOWN
 }

@@ -97,9 +97,9 @@ public class ProductionResultService {
         if (defectQty > 0) {
             Defect auto = new Defect();
             auto.setProductionResult(result);
-            auto.setDefectType(DefectType.OTHER);
+            auto.setDefectType(DefectType.UNKNOWN);
             auto.setDefectQty(defectQty);
-            auto.setAction(DefectAction.PENDING);
+            auto.setAction(DefectAction.HOLD);
             auto.setHandledBy(null);
             auto.setHandledAt(null);
             auto.setNote("실적 입력 자동 등록");

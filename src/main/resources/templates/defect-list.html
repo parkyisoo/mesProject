@@ -62,7 +62,7 @@
         <td th:text="${d.productionResult.lot.lotNumber}">LOT</td>
         <td th:text="${d.defectType}">TYPE</td>
         <td th:text="${d.defectQty}">0</td>
-        <td th:text="${d.action}">PENDING</td>
+        <td th:text="${d.action}">HOLD</td>
         <td th:text="${d.handledBy != null ? d.handledBy.username : '—'}">—</td>
         <td th:text="${d.handledAt != null ? #temporals.format(d.handledAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
         <td>
@@ -74,7 +74,7 @@
                 </select>
                 <select name="action" required>
                     <th:block th:each="a : ${defectActions}">
-                        <option th:if="${a.name() != 'PENDING'}" th:value="${a.name()}" th:text="${a.name()}"></option>
+                        <option th:if="${a.name() != 'HOLD'}" th:value="${a.name()}" th:text="${a.name()}"></option>
                     </th:block>
                 </select>
                 <button class="small" type="submit">처리</button>

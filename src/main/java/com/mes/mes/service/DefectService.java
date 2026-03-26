@@ -45,9 +45,9 @@ public class DefectService {
 
         Defect d = new Defect();
         d.setProductionResult(result);
-        d.setDefectType(defectType != null ? defectType : DefectType.OTHER);
+        d.setDefectType(defectType != null ? defectType : DefectType.UNKNOWN);
         d.setDefectQty(defectQty);
-        d.setAction(DefectAction.PENDING);
+        d.setAction(DefectAction.HOLD);
         d.setNote(note);
         defectRepository.save(d);
     }
@@ -64,8 +64,8 @@ public class DefectService {
         if (defectType == null || action == null) {
             throw new IllegalArgumentException("불량 유형과 처리 방법을 선택하세요.");
         }
-        if (action == DefectAction.PENDING) {
-            throw new IllegalArgumentException("처리 방법으로 PENDING은 선택할 수 없습니다.");
+        if (action == DefectAction.HOLD) {
+            throw new IllegalArgumentException("처리 시에는 REWORK 또는 SCRAP을 선택하세요.");
         }
 
         d.setDefectType(defectType);
