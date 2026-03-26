@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>작업지시 등록 — MES</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 480px; }
+        nav { margin-bottom: 1.5rem; }
+        nav a { margin-right: 1rem; }
+        label { display: block; margin-top: 1rem; font-size: 0.875rem; }
+        select, input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+        button { margin-top: 1.5rem; padding: 0.5rem 1rem; cursor: pointer; }
+        .error { color: #b91c1c; margin-top: 1rem; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: main}"></div>
+
+<h1>작업지시 등록</h1>
+<p class="error" th:if="${error != null}" th:text="${error}"></p>
+
+<form th:action="@{/work-orders}" method="post">
+    <label for="productId">제품</label>
+    <select id="productId" name="productId" required>
+        <option value="">선택</option>
+        <option th:each="p : ${products}" th:value="${p.productId}" th:text="${p.productName}">제품</option>
+    </select>
+
+    <label for="processId">공정</label>
+    <select id="processId" name="processId" required>
+        <option value="">선택</option>
+        <option th:each="pr : ${processes}" th:value="${pr.processId}" th:text="${pr.processName}">공정</option>
+    </select>
+
+    <label for="plannedQty">계획 수량</label>
+    <input id="plannedQty" name="plannedQty" type="number" min="1" required/>
+
+    <label for="plannedDate">예정일</label>
+    <input id="plannedDate" name="plannedDate" type="date" required/>
+
+    <button type="submit">등록</button>
+</form>
+</body>
+</html>

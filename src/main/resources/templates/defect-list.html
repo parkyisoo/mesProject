@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>불량 관리 — MES</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; width: 100%; max-width: 1200px; margin-top: 1rem; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+        th { background: #f4f4f5; }
+        .error { color: #b91c1c; margin-bottom: 1rem; }
+        .section { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e5e5; }
+        form.inline { display: inline-block; margin: 0; }
+        select, input[type="number"] { padding: 0.35rem; max-width: 10rem; }
+        button.small { padding: 0.35rem 0.65rem; cursor: pointer; font-size: 0.8125rem; }
+        .manual-form label { display: inline-block; margin-right: 0.5rem; margin-top: 0.5rem; }
+        .manual-form input[type="number"] { width: 8rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: main}"></div>
+
+<h1>불량 목록</h1>
+<p class="error" th:if="${error != null}" th:text="${error}"></p>
+
+<div class="section">
+    <h2 style="font-size:1rem;">불량 수동 등록</h2>
+    <form class="manual-form" th:action="@{/defects}" method="post">
+        <label>실적 ID (result_id)
+            <input name="resultId" type="number" min="1" required/>
+        </label>
+        <label>유형
+            <select name="defectType" required>
+                <option th:each="t : ${defectTypes}" th:value="${t.name()}" th:text="${t.name()}"></option>
+            </select>
+        </label>
+        <label>수량
+            <input name="defectQty" type="number" min="1" required/>
+        </label>
+        <label>비고
+            <input name="note" type="text" maxlength="500" style="width:16rem;"/>
+        </label>
+        <button class="small" type="submit" style="margin-top:0.5rem;">등록</button>
+    </form>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>LOT번호</th>
+        <th>불량유형</th>
+        <th>수량</th>
+        <th>처리방법</th>
+        <th>처리자</th>
+        <th>처리일시</th>
+        <th>처리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="d : ${defects}">
+        <td th:text="${d.productionResult.lot.lotNumber}">LOT</td>
+        <td th:text="${d.defectType}">TYPE</td>
+        <td th:text="${d.defectQty}">0</td>
+        <td th:text="${d.action}">PENDING</td>
+        <td th:text="${d.handledBy != null ? d.handledBy.username : '—'}">—</td>
+        <td th:text="${d.handledAt != null ? #temporals.format(d.handledAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+        <td>
+            <form class="inline" th:if="${d.handledAt == null}"
+                  th:action="@{/defects/{id}/handle(id=${d.defectId})}" method="post">
+                <select name="defectType" required>
+                    <option th:each="t : ${defectTypes}" th:value="${t.name()}" th:text="${t.name()}"
+                            th:selected="${t == d.defectType}"></option>
+                </select>
+                <select name="action" required>
+                    <th:block th:each="a : ${defectActions}">
+                        <option th:if="${a.name() != 'PENDING'}" th:value="${a.name()}" th:text="${a.name()}"></option>
+                    </th:block>
+                </select>
+                <button class="small" type="submit">처리</button>
+            </form>
+            <span th:if="${d.handledAt != null}">—</span>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(defects)}">
+        <td colspan="7">등록된 불량이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>생산실적 입력 — MES</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 520px; }
+        label { display: block; margin-top: 1rem; font-size: 0.875rem; }
+        input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+        .ro { background: #f4f4f5; }
+        button { margin-top: 1.5rem; padding: 0.5rem 1rem; cursor: pointer; }
+        .error { color: #b91c1c; margin-bottom: 1rem; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: main}"></div>
+
+<h1>생산실적 입력</h1>
+<p class="error" th:if="${error != null}" th:text="${error}"></p>
+
+<form th:action="@{/results}" method="post">
+    <input type="hidden" name="lotId" th:value="${lot.lotId}"/>
+
+    <label>LOT번호</label>
+    <input class="ro" type="text" readonly th:value="${lot.lotNumber}"/>
+
+    <label>제품명</label>
+    <input class="ro" type="text" readonly th:value="${lot.workOrder.product.productName}"/>
+
+    <label>계획수량</label>
+    <input class="ro" type="text" readonly th:value="${plannedQty}"/>
+
+    <label for="goodQty">양품 수량</label>
+    <input id="goodQty" name="goodQty" type="number" min="0" required/>
+
+    <label for="defectQty">불량 수량</label>
+    <input id="defectQty" name="defectQty" type="number" min="0" required/>
+
+    <label for="startTime">시작 시간</label>
+    <input id="startTime" name="startTime" type="datetime-local" step="60"/>
+
+    <label for="endTime">종료 시간</label>
+    <input id="endTime" name="endTime" type="datetime-local" step="60"/>
+
+    <p style="font-size:0.8125rem;color:#555;margin-top:0.75rem;">
+        시작·종료 시간을 비우면 저장 시점의 현재 시각으로 자동 입력됩니다.
+    </p>
+
+    <button type="submit">제출</button>
+</form>
+<p style="margin-top:1rem;"><a th:href="@{/lots}">LOT 목록으로</a></p>
+</body>
+</html>

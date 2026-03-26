@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LOT 목록 — MES</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; width: 100%; max-width: 1200px; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; vertical-align: middle; }
+        th { background: #f4f4f5; }
+        .error { color: #b91c1c; margin-bottom: 0.5rem; }
+        .message { color: #166534; margin-bottom: 0.5rem; }
+        form.inline { display: inline; margin-right: 0.35rem; }
+        button.small { padding: 0.35rem 0.65rem; cursor: pointer; font-size: 0.8125rem; }
+        a.btn { display: inline-block; padding: 0.35rem 0.65rem; font-size: 0.8125rem; text-decoration: none;
+            border: 1px solid #333; color: #111; margin-right: 0.35rem; vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: main}"></div>
+
+<h1>LOT 목록</h1>
+<p class="message" th:if="${message != null}" th:text="${message}"></p>
+<p class="error" th:if="${error != null}" th:text="${error}"></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>LOT번호</th>
+        <th>작업지시번호</th>
+        <th>제품</th>
+        <th>공정</th>
+        <th>상태</th>
+        <th>상태 변경 / 실적</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="lot : ${lots}" th:with="role=${session.role}">
+        <td th:text="${lot.lotNumber}">LOT-...</td>
+        <td th:text="${lot.workOrder.woNumber}">WO-...</td>
+        <td th:text="${lot.workOrder.product.productName}">제품</td>
+        <td th:text="${lot.workOrder.process.processName}">공정</td>
+        <td th:text="${lot.status}">WAITING</td>
+        <td>
+            <th:block th:if="${role == 'ADMIN' or role == 'OPERATOR'}">
+                <form class="inline" th:if="${lot.status.name() == 'WAITING'}"
+                      th:action="@{/lots/{id}/status(id=${lot.lotId})}" method="post">
+                    <input type="hidden" name="nextStatus" value="IN_PROGRESS"/>
+                    <button class="small" type="submit">진행 시작</button>
+                </form>
+                <form class="inline" th:if="${lot.status.name() == 'IN_PROGRESS'}"
+                      th:action="@{/lots/{id}/status(id=${lot.lotId})}" method="post">
+                    <input type="hidden" name="nextStatus" value="COMPLETED"/>
+                    <button class="small" type="submit">완료</button>
+                </form>
+                <form class="inline" th:if="${lot.status.name() == 'IN_PROGRESS'}"
+                      th:action="@{/lots/{id}/status(id=${lot.lotId})}" method="post">
+                    <input type="hidden" name="nextStatus" value="ON_HOLD"/>
+                    <button class="small" type="submit">보류</button>
+                </form>
+                <a class="btn" th:if="${lot.status.name() == 'IN_PROGRESS'}"
+                   th:href="@{/results/new(lotId=${lot.lotId})}">실적입력</a>
+            </th:block>
+            <span th:if="${role == 'QC'}">—</span>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(lots)}">
+        <td colspan="6">등록된 LOT이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

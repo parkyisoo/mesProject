@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>작업지시 목록 — MES</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; }
+        nav { margin-bottom: 1.5rem; }
+        nav a { margin-right: 1rem; }
+        table { border-collapse: collapse; width: 100%; max-width: 960px; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; }
+        th { background: #f4f4f5; }
+        .actions { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: main}"></div>
+
+<h1>작업지시 목록</h1>
+<div class="actions" th:with="role=${session.role}">
+    <a th:if="${role == 'ADMIN'}" th:href="@{/work-orders/new}">새 작업지시</a>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>작업지시번호</th>
+        <th>제품명</th>
+        <th>공정명</th>
+        <th>계획수량</th>
+        <th>상태</th>
+        <th>예정일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="wo : ${workOrders}">
+        <td th:text="${wo.woNumber}">WO-...</td>
+        <td th:text="${wo.product.productName}">제품</td>
+        <td th:text="${wo.process.processName}">공정</td>
+        <td th:text="${wo.plannedQty}">0</td>
+        <td th:text="${wo.status}">OPEN</td>
+        <td th:text="${#temporals.format(wo.plannedDate, 'yyyy-MM-dd')}">2025-01-01</td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(workOrders)}">
+        <td colspan="6">등록된 작업지시가 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
