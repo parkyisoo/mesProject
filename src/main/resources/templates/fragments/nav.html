@@ -2,9 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <nav th:fragment="main" th:with="role=${session.role}" style="margin-bottom:1.5rem;">
-    <a th:if="${role == 'ADMIN' or role == 'OPERATOR'}" th:href="@{/work-orders}">작업지시</a>
-    <a th:if="${role == 'ADMIN' or role == 'OPERATOR' or role == 'QC'}" th:href="@{/lots}">LOT</a>
+    <a th:if="${session.userId != null}" th:href="@{/dashboard}">대시보드</a>
+    <a th:if="${role == 'ADMIN'}" th:href="@{/work-orders}">작업지시</a>
+    <a th:if="${role == 'ADMIN' or role == 'OPERATOR'}" th:href="@{/lots}">LOT</a>
     <a th:if="${role == 'ADMIN' or role == 'QC'}" th:href="@{/defects}">불량</a>
+    <a th:if="${role == 'ADMIN' or role == 'OPERATOR' or role == 'QC'}" th:href="@{/kpi}">KPI</a>
     <a th:href="@{/logout}">로그아웃</a>
 </nav>
 </body>

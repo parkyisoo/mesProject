@@ -1,7 +1,6 @@
 package com.mes.mes.controller;
 
 import com.mes.mes.entity.User;
-import com.mes.mes.entity.UserRole;
 import com.mes.mes.service.AuthService;
 import com.mes.mes.support.SessionAuthUtil;
 import jakarta.servlet.http.HttpSession;
@@ -23,26 +22,10 @@ public class LoginController {
         this.authService = authService;
     }
 
-    @GetMapping("/")
-    public String home(HttpSession session) {
-        if (session.getAttribute(SessionAuthUtil.ATTR_USER_ID) == null) {
-            return "redirect:/login";
-        }
-        UserRole role = SessionAuthUtil.parseRole(session);
-        if (role == UserRole.QC) {
-            return "redirect:/lots";
-        }
-        return "redirect:/work-orders";
-    }
-
     @GetMapping("/login")
     public String loginPage(HttpSession session, Model model) {
         if (session.getAttribute(SessionAuthUtil.ATTR_USER_ID) != null && model.getAttribute("error") == null) {
-            UserRole role = SessionAuthUtil.parseRole(session);
-            if (role == UserRole.QC) {
-                return "redirect:/lots";
-            }
-            return "redirect:/work-orders";
+            return "redirect:/dashboard";
         }
         return "login";
     }
@@ -62,10 +45,7 @@ public class LoginController {
         session.setAttribute(SessionAuthUtil.ATTR_USER_ID, user.getUserId());
         session.setAttribute("username", user.getUsername());
         session.setAttribute(SessionAuthUtil.ATTR_ROLE, user.getRole().name());
-        if (user.getRole() == UserRole.QC) {
-            return "redirect:/lots";
-        }
-        return "redirect:/work-orders";
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/logout")
