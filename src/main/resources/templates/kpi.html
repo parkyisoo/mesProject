@@ -16,12 +16,12 @@
         .card h2 { margin: 0 0 0.35rem; font-size: 0.75rem; color: #52525b; text-transform: uppercase; }
         .card .val { font-size: 1.5rem; font-weight: 700; }
         .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin: 2rem 0; }
-        .chart-box { min-height: 280px; }
+        .chart-box { position: relative; height: 280px; max-width: 100%; }
         table { border-collapse: collapse; width: 100%; max-width: 640px; margin-top: 0.75rem; }
         th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; }
         th { background: #f4f4f5; }
+        .chart-empty { color: #71717a; font-size: 0.875rem; padding: 1rem 0; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div th:replace="~{fragments/nav :: main}"></div>
@@ -51,12 +51,14 @@
 
 <div class="charts">
     <div class="chart-box">
-        <h2 style="font-size:1rem;">공정별 수율 (%)</h2>
+        <h2 style="font-size:1rem;margin:0 0 0.5rem;">공정별 수율 (%)</h2>
         <canvas id="processBar"></canvas>
+        <p class="chart-empty" id="processBarEmpty" style="display:none;">이 기간에 공정별 실적이 없습니다.</p>
     </div>
     <div class="chart-box">
-        <h2 style="font-size:1rem;">불량 유형별 수량</h2>
+        <h2 style="font-size:1rem;margin:0 0 0.5rem;">불량 유형별 수량</h2>
         <canvas id="defectPie"></canvas>
+        <p class="chart-empty" id="defectPieEmpty" style="display:none;">이 기간에 불량 집계가 없습니다.</p>
     </div>
 </div>
 
@@ -83,51 +85,87 @@
     </tbody>
 </table>
 
-<script id="kpi-bar-data" type="application/json" th:text="${barChartJson}"></script>
-<script id="kpi-pie-data" type="application/json" th:text="${pieChartJson}"></script>
+<!--
+  브라우저 <script> 로 쓰려면 UMD 필요. (패키지 루트 https://cdn.jsdelivr.net/npm/chart.js 는 ESM이라 Chart 전역 미생성)
+  동일 패키지: chart.js → dist/chart.umd.min.js
+-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+(function () {
+    var barRaw = /*[[${barChartJson}]]*/ '{"labels":[],"data":[]}';
+    var pieRaw = /*[[${pieChartJson}]]*/ '{"labels":[],"data":[]}';
+    window.__KPI_BAR__ = (function () {
+        try { return JSON.parse(barRaw); } catch (e) { console.error('KPI bar JSON', e); return { labels: [], data: [] }; }
+    })();
+    window.__KPI_PIE__ = (function () {
+        try { return JSON.parse(pieRaw); } catch (e) { console.error('KPI pie JSON', e); return { labels: [], data: [] }; }
+    })();
+})();
+/*]]>*/
+</script>
 <script>
 (function () {
-    const barEl = document.getElementById('kpi-bar-data');
-    const pieEl = document.getElementById('kpi-pie-data');
-    const bar = barEl && barEl.textContent ? JSON.parse(barEl.textContent) : {labels: [], data: []};
-    const pie = pieEl && pieEl.textContent ? JSON.parse(pieEl.textContent) : {labels: [], data: []};
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js UMD 로드 실패. 네트워크 또는 CDN을 확인하세요.');
+        return;
+    }
+    var bar = window.__KPI_BAR__ || { labels: [], data: [] };
+    var pie = window.__KPI_PIE__ || { labels: [], data: [] };
 
-    const ctxBar = document.getElementById('processBar');
+    var ctxBar = document.getElementById('processBar');
+    var barEmpty = document.getElementById('processBarEmpty');
     if (ctxBar) {
-        new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: bar.labels || [],
-                datasets: [{
-                    label: '수율 (%)',
-                    data: bar.data || [],
-                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                    borderColor: 'rgb(37, 99, 235)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, max: 100 } }
-            }
-        });
+        if (!bar.labels || bar.labels.length === 0) {
+            ctxBar.style.display = 'none';
+            if (barEmpty) barEmpty.style.display = 'block';
+        } else {
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: bar.labels,
+                    datasets: [{
+                        label: '수율 (%)',
+                        data: bar.data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgb(37, 99, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
     }
 
-    const ctxPie = document.getElementById('defectPie');
+    var ctxPie = document.getElementById('defectPie');
+    var pieEmpty = document.getElementById('defectPieEmpty');
     if (ctxPie) {
-        new Chart(ctxPie, {
-            type: 'pie',
-            data: {
-                labels: pie.labels || [],
-                datasets: [{
-                    data: pie.data || [],
-                    backgroundColor: [
-                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'
-                    ]
-                }]
-            },
-            options: { responsive: true }
-        });
+        var pieSum = (pie.data || []).reduce(function (a, b) { return a + b; }, 0);
+        if (!pie.labels || pie.labels.length === 0 || pieSum === 0) {
+            ctxPie.style.display = 'none';
+            if (pieEmpty) pieEmpty.style.display = 'block';
+        } else {
+            new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: pie.labels,
+                    datasets: [{
+                        data: pie.data,
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
     }
 })();
 </script>
