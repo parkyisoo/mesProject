@@ -3,7 +3,7 @@
 
 ---
 
-### 🛠 기술 스택
+### 기술 스택
 * **Language:** Java 17
 * **Framework:** Spring Boot 3.2.3
 * **Database:** MySQL 8.0, JPA (Hibernate)
